@@ -1,5 +1,5 @@
 // observable 可以被观察 action 修改状态的方式
-import { observable, action } from 'mobx';
+import { observable, action, toJS } from 'mobx';
 
 export class ArticleStore {
   // 可以被观察的map array object
@@ -8,6 +8,16 @@ export class ArticleStore {
   @action loadArticle(slug) {
     // articlesRegistry push
     // api
+    return fetch(`https://conduit.productionready.io/api/articles/${slug}`)
+      .then(data => data.json())
+      .then(action(
+        ({ article }) => {
+          this.articlesRegistry.set(article.slug, article)
+        })
+      )
+  }
+  @action getArticle(slug) {
+    return toJS(this.articlesRegistry.get(slug));
   }
 }
 

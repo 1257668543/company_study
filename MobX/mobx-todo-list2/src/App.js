@@ -1,17 +1,17 @@
 import React from 'react';
-import { inject, observer } from 'mobx-react';
+import { Switch, Route } from 'react-router-dom';
+import Article from './pages/Article';
 
-@inject("articleSrote")
-@observer
 class App extends React.Component {
   render() {
-    console.log(this.props);
-    return (  
+    return (
       <div>
-        App
+          <Switch>
+            <Route path="/article/:id" component={Article} />
+          </Switch>
       </div>
     );
   }
 }
- 
+
 export default App;

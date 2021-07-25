@@ -24,3 +24,9 @@
   <Provider store={store}>
   </Provider>
   多模块
+
+  1. 前端启动路由
+  <App />（根组件）外面包一层 HashRouter HistoryRouter SPA
+  :3000/#/ hashRouter   :3000/  historyRouter
+  /article/:id
+  :3000/#/article/dfdf121 -> Route match 匹配到
