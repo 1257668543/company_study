@@ -1,0 +1,35 @@
+body {
+  margin: 0;
+}
+
+.navBar {
+  width: 100vw;
+  height: 200px;
+  text-align: center;
+  line-height: 200px;
+  background-color: rgb(25, 131, 192);
+  color: #FFF;
+  font-size: 30px;
+}
+
+#app {
+  background: transparent;
+}
+
+.flexWrapper {
+  display: flex;
+}
+
+.siderBar {
+  width: 240px;
+  height: calc(100vh - 200px);
+  background-color: rgb(51, 176, 226);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.d3Wrapper {
+  width: calc(100vw - 240px);
+  padding: 20px;
+}
