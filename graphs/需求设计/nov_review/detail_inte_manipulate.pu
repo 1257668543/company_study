@@ -1,0 +1,76 @@
+@startuml pageInter
+title 开发配置接入
+actor       用户           as User
+participant 前端页面        as Fe
+participant 后端接口        as Be
+participant 数据中心数据库  as Db
+participant 调度系统       as Jenkins
+participant 集群服务       as HiveServer
+
+== 填写接入数据源 ==
+
+group 单表接入
+
+  User -> Fe: 选择DB(Suggest)
+  Fe -> User: 提供Suggest，根据db_code查询数据表
+  User -> Fe: 选择数据表
+  User -> Fe: 焦点离开数据表选择框
+  Fe -> Be: 根据当前数据表类型、库-表配置与周期类型请求 列信息 与 目标数据源信息
+  Fe -> User: 更新目标数据源信息与可选列信息
+  User -> Fe: 选择同步列名与唯一键
+  User -> Fe: 选择是否生成pwd视图
+  User -> Fe: 选择是否接入业务数据库，若是则选择业务数据库名称
+
+end
+
+group 单库分表接入
+
+  User -> Fe: 选择DB(Suggest)，并添加分表
+  loop M次（M = 分表数量）
+    User -> Fe: 填写匹配数据表正则表达式
+    Fe -> User: 校验该接入中是否存在相同表达式
+    User -> Fe: 焦点离开数据表选择框
+    Fe -> Be: 根据当前数据表类型、库-表配置与周期类型请求 列信息 与 目标数据源信息
+    Fe -> User: 更新目标数据源信息与可选列信息
+  end
+  User -> Fe: 选择同步列名与唯一键
+  User -> Fe: 选择是否生成pwd视图
+  User -> Fe: 选择是否接入业务数据库，若是则选择业务数据库名称
+
+end
+
+group 分库分表接入
+
+  loop M次（M = 库-表数量）
+    User -> Fe: 选择DB(Suggest)
+    User -> Fe: 填写匹配数据表正则表达式
+    Fe -> User: 校验该接入中是否存在相同库-表
+    User -> Fe: 焦点离开数据表选择框
+    Fe -> Be: 根据当前数据表类型、库-表配置与周期类型请求 列信息 与 目标数据源信息
+    Fe -> User: 更新目标数据源信息与可选列信息
+  end
+  User -> Fe: 选择同步列名与唯一键
+  User -> Fe: 选择是否生成pwd视图
+  User -> Fe: 选择是否接入业务数据库，若是则选择业务数据库名称
+
+end
+
+Fe --> User: 校验必填项
+
+== 其余配置 ==
+
+User -> Fe: 负责人、业务线、调度相关配置、描述
+Fe -> User: 校验必填项
+
+== 保存 ==
+
+User --> Fe: 点击保存/新建
+Fe --> Be: 请求接口保存
+Be --> Db: 将接入配置 insert / update 表
+Db --> Be: success
+Be --> Fe: status: 0
+Fe --> User: 提示保存成功
+Be --> Jenkins: 创建接入任务 
+Jenkins --> HiveServer: 定时触发接入
+
+@enduml

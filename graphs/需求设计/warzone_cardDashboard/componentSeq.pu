@@ -1,0 +1,47 @@
+@startuml pageInter
+
+database 后端                   as Be
+entity 首页                     as Home
+entity 卡片看板                 as CardDashboard
+entity 卡片                     as kapian
+entity 首页仓库                 as HomeStore
+entity 卡片仓库                 as CardStore
+
+==初始化==
+
+Home --> HomeStore: 首页初始化
+HomeStore --> Be: 获取看板基础信息
+Be --> HomeStore: 返回看板基础信息
+HomeStore --> Home: 更新看板基础信息
+Home --> CardDashboard: 加载卡片看板
+CardDashboard --> kapian: 遍历看板信息，渲染对应数量的卡片
+alt 支持的图表类型
+  kapian --> CardStore: 调用请求方法
+  CardStore --> Be: 获取图表详细信息
+  Be --> CardStore: 返回图表详细信息
+  CardStore --> kapian: 更新图表
+  kapian --> CardDashboard: 返回相应图表
+else 不支持的图表类型
+  kapian --> CardDashboard: 返回缺省图卡片
+end
+
+==点击全屏==
+kapian --> CardDashboard: 回调传递图表id
+CardDashboard --> CardDashboard: 展示全屏节点，加载id对应的图表
+==下拉刷新==
+Home --> HomeStore: onRefresh回调请求方法
+HomeStore --> Be: 获取看板基础信息
+Be --> HomeStore: 返回看板基础信息
+HomeStore --> CardDashboard: 更新看板基础信息，刷新卡片看板
+CardDashboard --> kapian: 遍历看板信息，渲染对应数量的卡片
+alt 支持的图表类型
+  kapian --> CardStore: 调用请求方法
+  CardStore --> Be: 获取图表详细信息
+  Be --> CardStore: 返回图表详细信息
+  CardStore --> kapian: 更新图表
+  kapian --> CardDashboard: 返回相应图表
+else 不支持的图表类型
+  kapian --> CardDashboard: 返回缺省图卡片
+end
+
+@enduml

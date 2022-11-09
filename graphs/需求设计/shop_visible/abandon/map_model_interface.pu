@@ -1,0 +1,48 @@
+@startuml classDesign
+Interface Model {
+  options
+  overlays
+  dispatchMutation()
+}
+Interface options {
+  Mode
+  Static
+  onClick
+}
+Interface overlays {
+  CustomOverlay
+  Marker
+}
+
+options --* Model
+overlays --* Model
+
+note left of Model::options
+  接收 StateController 从后端获取的配置 进行加工，输出 props 供地图实例使用
+end note
+note right of Model::overlays
+  非交互，静态展示的覆盖物
+end note
+note right of Model::dispatchMutation
+  地图实例定制交互的回调，可根据业务重写或拓展
+end note
+
+note left of options::Mode
+  根据模式决定交互行为，为Map注入不同options与覆盖物callback
+end note
+note right of options::Static
+  其余静态参数，如缩放比例，中心点位置等等
+end note
+note right of options::onClick
+  地图点击事件的回调，默认不传，根据业务定制
+end note
+
+note left of overlays::CustomOverlay
+  自定义覆盖物，使用自定义Dom，支持后续业务拓展
+end note
+
+note right of overlays::Marker
+  标注点，结合业务多为门店，根据Mode绑定相应callback
+end note
+
+@enduml

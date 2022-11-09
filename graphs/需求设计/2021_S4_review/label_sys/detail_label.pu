@@ -1,0 +1,51 @@
+@startuml pageInter
+title 配置标签
+actor       用户           as User
+participant 前端页面        as Fe
+participant 后端接口        as Be
+participant 数据中心数据库  as Db
+participant 调度系统       as Jenkins
+participant 集群服务       as HiveServer
+
+== 填写基本信息 ==
+User -> Fe: 填写其他信息
+User -> Fe: 填写执行sql
+== 填写调度配置 ==
+User -> Fe: 选择执行方式
+User -> Fe: 选择执行参数
+User -> Fe: 填写其他信息
+== 保存 ==
+User -> Fe: 点击保存
+alt 校验通过
+  Fe -> Be: 请求接口保存
+  alt sql校验成功
+    Be -> Db: insert / update 标签配置
+    Be -> Fe: status: 0
+    Fe -> User: 保存成功
+  else sql校验失败
+    Be -> Fe: status: -1024
+    Fe -> User: 保存失败
+  end
+else 校验未通过
+  Fe -> Fe: 跳转至对应Tab
+  Fe -> User: 提示请填写基本配置/调度配置表单必填项
+end
+== 启用 ==
+User -> Fe: 列表页点击启用
+Fe -> Be: 携带标签id请求启用
+Be -> Jenkins: 创建调度任务，参数使用调度配置参数
+Be -> Fe: status: 0
+Fe -> User: 启用成功
+Fe -> Fe: 刷新列表
+== 执行 ==
+User -> Fe: 列表页点击执行
+User -> Fe: 选择执行方式与时间参数
+Fe -> Be: 携带标签id与执行参数请求执行
+Be -> Jenkins: 创建调度任务，使用用户选择的参数批量/单次执行
+Be -> Fe: status: 0
+Fe -> User: 执行成功
+Fe -> Fe: 刷新列表
+== 调度任务执行 ==
+Jenkins -> Be: 满足条件时触发
+Be -> HiveServer: 查询相应dt数据，写入标签数据表
+@enduml

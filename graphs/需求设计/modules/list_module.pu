@@ -1,0 +1,35 @@
+@startuml pageInter
+title 看板列表模块
+actor       用户             as User
+participant 看板列表页        as DashboardList
+participant 看板搜索页        as DashboardSearch
+participant 列表状态仓库         as Store
+control     Controller      as Control
+database    数据库           as Db
+== 列表页初始化 ==
+  User -> DashboardList: 蜂报入口进入
+  DashboardList -> Store: 初始化，调用仓库请求
+  Store -> Control: 不携带筛选条件发起请求
+  Db -> Control: fetch: 根据 dashboard_name 拉起看板信息
+  Control -> Store: 回调写入状态
+  Store -> DashboardList: 状态更新
+  DashboardList -> User: 更新页面
+== 列表页Tab切换 ==
+  User -> DashboardList: 点击某个Tab
+  DashboardList -> Store: 调用仓库筛选方法
+  Store --> Store: 筛选原始数据，更新页面展示数据;
+  Store -> DashboardList: 状态更新
+  DashboardList -> User: 更新页面
+== 搜索看板 ==
+DashboardList -> DashboardSearch: 用户点击导航栏搜索
+DashboardSearch -> Store: 携带键入keyword
+Store -> Control: dashboard_name: keyword
+Db -> Control: fetch: 根据 dashboard_name 拉起看板信息
+Control -> Store: 回调写入状态
+Store -> DashboardSearch: 状态更新
+alt 命中
+  DashboardSearch -> User: 更新页面，展示相关看板信息
+else 未命中
+  DashboardSearch -> User: 展示空白页，提示暂无数据
+end
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+title 看板没有钻取是因为没有获取表格类型的维度与指标信息
+start
+partition 第一次钻取 {
+:点击钻取按钮;
+:popover展示不包含自身的所有维度列表;
+:选取某个维度;
+if (存在钻取表格) then
+-> Y;
+: 调用自身hideExt方法，销毁上一次钻取产生的表格;
+else
+-> N;
+: 无需销毁，进入下一步参数创建;
+endif
+:Tr（每行使用的组件，即钻取动作根组件），创建 childSearchFilter 并开启 showExt，searchFilter 下递子组件DrillTable;
+:DrillTable中初始化、排序、分页变化时使用searchFilter拼接参数调用query接口获取下探图表内容;
+}
+note right
+adwdaw
+end note
+partition 重复钻取 {
+:DrillTable初始化使用searchFilter拼接参数调用query接口获取下钻图表内容；
+:DrillTable渲染原生Table，行展开时递归调用自身;
+:点击钻取按钮;
+:popover展示不包含自身的所有维度列表;
+:选取某个维度;
+:DrillTable创建 childSearchFilter 并 展开选中行 ，searchFilter 下递自身;
+}
+partition 根组件收起 {
+:调用Tr组件hideExt方法，销毁所有钻取表格Dom节点;
+}
+partition 钻取表格收起 {
+:将所在层级的展开行key置空，该层级及以下钻取表格被隐藏(display: none;);
+}
+stop
+@enduml

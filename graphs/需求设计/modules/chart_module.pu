@@ -1,0 +1,41 @@
+@startuml pageInter
+title 图表详情模块
+actor       用户             as User
+participant 图表详情页        as ChartDetial
+participant 详情状态仓库         as Store
+control     Controller      as Control
+database    数据库           as Db
+== 初始化 ==
+User -> ChartDetial: 看板详情页选择图表进入，url携带图表id
+ChartDetial -> Store: 获取图表参数
+Store --> Store: 根据 id 过滤 charts_item 得到当前图表参数: params_v2
+group 图表数据获取
+  Store --> Store: 解析params_v2作为请求参数
+  Store -> Control: 携带params_v2解析后得到的数据，请求对应图表数据
+  Control --> Control: 参数获取，数据校验
+  Control --> Db: 根据参数生成 sql 执行
+  Db -> Control: fetch：返回 sql 执行所得数据
+  Control -> Store: 整理格式，返回不同图表类型所需数据
+  Store -> ChartDetial: 状态更新
+  ChartDetial -> User: 更新页面
+end
+== 筛选 ==
+User -> ChartDetial: 点击右上角筛选
+ChartDetial -> Store: 调起筛选项值查询
+loop filters.length 次
+  Store -> Control: 携带数据集id、字段名称请求值
+  Db -> Control: fetch: 根据 data_set_id 与 field 拉起该字段所有可选值
+  Control -> Store: 回调写入状态
+  Store -> ChartDetial: 状态更新
+  ChartDetial -> User: 更新页面
+end
+User -> ChartDetial: 修改筛选项点击确定
+ChartDetial -> Store: 重新请求图表信息
+Store --> Store: 使用初始化解析的params_v2，拼上筛选配置link_filter_v2
+Store --> Control: 请求筛选后图表数据
+Control --> Db: 根据参数生成 sql 执行
+Db -> Control: fetch：返回 sql 执行所得数据
+Control -> Store: 整理格式，返回不同图表类型所需数据
+Store -> ChartDetial: 状态更新
+ChartDetial -> User: 更新页面
+@enduml

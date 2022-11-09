@@ -1,0 +1,40 @@
+@startuml classDesign
+interface Map {
+  props
+  children
+  dispatchMutation()
+  refreshMapState()
+}
+interface props {
+  center
+  zoom
+}
+interface children {
+  Marker
+  InfoWindow
+  Polygon
+  Polyline
+  DistanceTool
+}
+props --* Map
+children --* Map
+note left of Map::props
+  Model 加工后的配置选项，指示地图实例初始化时使用参数
+end note
+note right of Map::children
+  Model 加工后的所有额外渲染Node
+end note
+note left of Map::dispatchMutation
+  Model 提供的回调，直接绑定地图的事件需要更新children / props 时使用该回调触发 Model 中 props / children 变更
+end note
+note right of Map::refreshMapState
+  StateController 提供的回调，直接绑定地图的事件需要重新获取数据时调用，触发 Model 更新
+end note
+
+note left of props::center
+  地图中心点坐标
+end note
+note right of props::zoom
+  初始缩放级别
+end note
+@enduml

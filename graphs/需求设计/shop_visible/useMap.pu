@@ -1,0 +1,34 @@
+@startuml pageInter
+title 地图看板
+actor       用户           as User
+participant 地图看板页面    as Fe
+participant 后端           as Be
+participant 数据库         as Db
+User -> Fe: 用户进入地图看板
+Fe -> User: 默认只展示地图与业务选择器
+== 筛选 ==
+User -> Fe: 选择配置的业务
+Fe -> Be: 请求业务筛选配置
+Be -> Db: SELECT filters FROM xxx WHERE bussiness_code='用户选择的业务code'
+Be -> Fe: status: 0
+Fe -> User: 展示业务选取的筛选
+User -> Fe: 填写筛选条件点击搜索
+Fe -> Be: 请求过滤后的业务数据
+== 更新数据统计与地图 ==
+Be -> Db: 从业务code关联的数据表中提取数据
+Be -> Fe: status: 0
+Fe -> User: 展示/更新数据统计，地图默认缩放到最高层级（省、市、区、店）
+== 地图交互 ==
+group 缩放
+User -> Fe: 点击聚合覆盖物或缩放至指定层级范围
+Fe -> User: 根据层级展示聚合覆盖物或门店Marker（聚合覆盖物的坐标为该层级下门店的中心点）
+end
+group 拖拽
+User -> Fe: 展示层级为店时，用户拖拽地图改变中心点位置（防抖 / 节流监听）
+Fe -> User: 获取到中心点，结合缩放层级计算当前视角下经纬度范围，过滤出需要展示的门店（性能优化）
+end
+group 点击门店
+User -> Fe: 点击某家门店Marker
+Fe -> User: 使用InfoWindow加offset展示该门店信息，并使用Pollyline表达店群关系
+end
+@enduml

@@ -1,0 +1,14 @@
+@startuml classDesign
+interface StateController {
+  fetchUrl
+  wrapperClassName
+}
+note left of StateController::fetchUrl
+  地图数据获取接口
+end note
+
+note right of StateController::wrapperClassName
+  组件容器类名（css module）
+end note
+
+@enduml

@@ -1,0 +1,46 @@
+@startuml pageInter
+title 看板详情模块
+actor       用户             as User
+participant 看板详情页        as DashboardDetail
+participant 详情状态仓库         as Store
+control     Controller      as Control
+database    数据库           as Db
+== 初始化 ==
+User -> DashboardDetail: 列表页选择看板进入，url携带看板id
+DashboardDetail -> Store: 请求获取看板详细信息
+Store -> Control: 携带看板id发起请求
+Db -> Control: fetch: 根据 dashboard_id 拉起指定看板详细信息
+Control -> Store: 回调写入状态
+note right: 更新看板所含图表信息：charts_item\n更新看板相关信息：dashboard_name, filters
+loop charts_item.length 次
+  Store --> Store: 解析params_v2作为请求参数
+  Store -> Control: 携带params_v2解析后得到的数据，请求对应图表数据
+  Control --> Control: 参数获取，数据校验
+  Control --> Db: 根据参数生成 sql 执行
+  Db -> Control: fetch：返回 sql 执行所得数据
+  Control -> Store: 整理格式，返回不同图表类型所需数据
+  Store -> DashboardDetail: 状态更新
+  DashboardDetail -> User: 更新页面
+end
+== 筛选配置 ==
+User -> DashboardDetail: 点击导航栏筛选
+DashboardDetail -> Store: 调起筛选项值查询
+loop filters.length 次
+  Store -> Control: 携带数据集id、字段名称请求值
+  Db -> Control: fetch: 根据 data_set_id 与 field 拉起该字段所有可选值
+  Control -> Store: 回调写入状态
+  Store -> DashboardDetail: 状态更新
+  DashboardDetail -> User: 更新页面
+end
+User -> DashboardDetail: 修改筛选项点击确定
+DashboardDetail -> Store: 重新请求所有图表信息
+loop charts_item.length 次
+  Store --> Store: 使用初始化解析的params_v2，拼上筛选配置link_filter_v2
+  Store --> Control: 请求筛选后图表数据
+  Control --> Db: 根据参数生成 sql 执行
+  Db -> Control: fetch：返回 sql 执行所得数据
+  Control -> Store: 整理格式，返回不同图表类型所需数据
+  Store -> DashboardDetail: 状态更新
+  DashboardDetail -> User: 更新页面
+end
+@enduml

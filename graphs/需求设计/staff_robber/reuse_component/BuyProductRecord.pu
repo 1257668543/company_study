@@ -1,0 +1,198 @@
+@startuml classDesign
+class BuyProductRecord {
+  pageConfig: Object
+  store: Object
+  history: Object
+  listProperty: Array
+  listSearchProperty: Array
+}
+note right of BuyProductRecord::pageConfig
+  列表页的配置信息
+end note
+note left of BuyProductRecord::store
+  列表使用的store实例
+end note
+note right of BuyProductRecord::history
+  router历史栈
+end note
+note left of BuyProductRecord::listProperty
+  列表组件Map（可选）
+end note
+note right of BuyProductRecord::listSearchProperty
+  搜索表单组件Map（可选）
+end note
+
+BuyProductRecord --|> IListPageConfig
+
+interface IListPageConfig {
+  search: Object
+  table: Object
+}
+
+note left of IListPageConfig::search
+  搜索表单配置
+end note
+note right of IListPageConfig::table
+  表格配置
+end note
+
+IListPageConfig --|> IListSearch
+IListPageConfig --|> ITableProps
+
+interface IListSearch {
+  filters: Array<{
+    label: string
+    bind: string | string[]
+    customComponent: string
+    props: any
+  }>
+}
+
+note left of IListSearch::label
+  筛选项展示名称
+end note
+note right of IListSearch::bind
+  绑定的Model属性名
+end note
+note left of IListSearch::customComponent
+  对应的filter
+end note
+note right of IListSearch::props
+  其他组件需要的props信息
+end note
+
+interface ITableProps {
+  columns: ITableRow[]
+  showTotalCount: Boolean
+  allowRowSelect: Boolean
+  tableLeftTopContent: ITableBtnProps[] | string[]
+  tableRightTopContent: ITableBtnProps[] | string[]
+}
+
+note left of ITableProps::columns
+  表格结构
+end note
+note right of ITableProps::showTotalCount
+  是否展示总数
+end note
+note left of ITableProps::allowRowSelect
+  是否允许选中selection
+end note
+note right of ITableProps::tableLeftTopContent
+  表格左上部分的组件
+end note
+note left of ITableProps::tableRightTopContent
+  表格右上角部分需要的组件
+end note
+
+ITableProps --|> ITableRow
+
+interface ITableRow {
+  title: String
+  dataIndex: String
+  customComponent: String | String[]
+  componentFormData: boolean
+  props: any
+  render: (data: any, row: any[], index: number) => any
+}
+
+note left of ITableRow::title
+  列名
+end note
+note right of ITableRow::dataIndex
+  对应数据的key
+end note
+note left of ITableRow::customComponent
+  组件内部维护的组件的key或key[]
+end note
+note right of ITableRow::componentFormData
+  从表格数据取值来决定渲染什么组件
+end note
+note left of ITableRow::props
+  透传给customComponent的props
+end note
+note right of ITableRow::render
+  定制化渲染，优先级最高
+end note
+
+ITableProps --|> ITableBtnProps
+
+interface ITableBtnProps {
+  component: string
+  props: any
+}
+
+note left of ITableBtnProps::component
+  需要渲染组件的key或keys[]
+end note
+note right of ITableBtnProps::props
+  透传给组件的props
+end note
+
+BasePageList --up|> IPageListStore
+
+interface IPageListStore {
+  model: Object,
+  approveLevel: Types.approveLevelType
+  updateModel: (data: { current: number, pageSize: number }, filters, sorter?: ISorter) => void
+  list: IListItem[]
+  listRawData: IListItem[]
+  changeRemoteDataToSearchList: (data: any) => IListItem
+  listLoading: boolean
+  listTotal: number
+  changeListLoading: (status: boolean) => void
+  loadData: (opt?: { sorter: ISorter }) => void
+  changeModelToParams: (opt?: { sorter: ISorter }) => any
+  approveStatus: Types.ApproveStatus
+  changeApproveStatus: (status: Types.ApproveStatus) => void
+  rowSelectionKeys?: string[] | number[]
+  updateRowSelectionKeys?: (keysString: string) => void
+}
+
+note left of IPageListStore::model
+  搜索表单Model，按需构造
+end note
+note right of IPageListStore::approveLevel
+  原防盗审核类型，枚举值
+end note
+note left of IPageListStore::list
+  Table组件dataSoucre，computed属性，由listRawData过滤得到
+end note
+note right of IPageListStore::listRawData
+  原始的表格数据，由changeRemoteDataToSearchList转化查询结果得到
+end note
+note left of IPageListStore::listLoading
+  Table组件loading属性
+end note
+note right of IPageListStore::listTotal
+  记录总数，分页使用
+end note
+note left of IPageListStore::approveStatus
+  枚举值，列表右上角过滤审核状态
+end note
+note right of IPageListStore::rowSelectionKeys
+  选中的行keys
+end note
+note left of IPageListStore::updateModel
+  Table组件onChange回调
+end note
+note right of IPageListStore::changeRemoteDataToSearchList
+  将接口返回的数据转化成内部数据结构
+end note
+note left of IPageListStore::changeListLoading
+  改变Table组件loading状态
+end note
+note right of IPageListStore::loadData
+  获取接口数据方法
+end note
+note left of IPageListStore::changeModelToParams
+  由Model根据页面状态衍生不同查询参数（复用性不高）
+end note
+note left of IPageListStore::changeApproveStatus
+  修改审核状态过滤值
+end note
+note left of IPageListStore::updateRowSelectionKeys
+  选中更新的回调
+end note
+
+@enduml

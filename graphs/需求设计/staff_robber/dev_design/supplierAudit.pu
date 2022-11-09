@@ -1,0 +1,73 @@
+@startuml pageInter
+autonumber
+
+title 供应商初审
+actor       供应商审核员        as User
+participant 初审列表页           as List
+participant 初审详情页           as Detail
+participant 防盗后端接口        as Be
+participant 天眼系统            as BliEyes
+
+==开始审核==
+
+User -> List: 开始审核
+List -> Be: 请求案例id与剩余任务数
+Be -> List: 按同一人优先同一门店策略下发无支付记录案例
+alt 获取到案例id
+  List -> Detail: 携带案例id跳转至下发任务详情
+else 无案例id且剩余任务数为0
+  autonumber stop
+  List -> List: 提示暂无待审核任务
+end
+autonumber resume
+Detail -> Be: 查询案例详情
+Be -> Detail: 返回案例所有详细信息（包含已审核结果）
+Detail -> Be: 回调锁定该案例
+Detail -> User: 初始化完成，可以开始审核
+
+==定位店员==
+
+User -> Detail: 根据系统提供的打卡照片，从打卡、离店监控抓拍人像中选定店员
+User -> Detail: 判定离店员工手持物品情况
+alt 离店监控清晰锁定店员
+  User -> Detail: 选择手持物品情况
+else 离店监控未找到店员或模糊
+  autonumber stop
+  User -> Detail: 无法选择，进入监控回溯
+end
+autonumber resume
+Detail -> Detail: 缓存所选图片与手持物品情况，进入监控回溯
+
+== 监控回溯 ==
+
+Detail -> Be: 拉取当前门店所有监控点位信息
+Be -> Detail: 返回数据
+Detail -> BliEyes: 使用打卡时间作为回放开始时间，选择的打卡、离店监控点位作为默认点位
+activate BliEyes
+User -> BliEyes: 使用天眼进行盗损判定
+deactivate BliEyes
+
+== 填写审核结果 ==
+
+alt 有盗损
+  User -> Detail: 填写盗损信息（商品与盗损行为发生时间、拍摄到盗损的摄像头等）
+else 无盗损/无法判读
+  autonumber stop
+  User -> Detail: 填写审核备注，描述情况
+end
+autonumber resume
+User -> Detail: 点击提交
+Detail -> Detail: 校验表单
+Detail -> Be: 提交审核结果
+Be -> Detail: 审核结果提交成功
+Detail -> Be: 查询下一个案例
+Be -> Detail: 返回结果
+alt 存在待审案例
+Detail -> User: 提示当前案例审核完成，即将跳转下一案例
+else 不存在
+autonumber stop
+Detail -> User: 提示所有案例审核完成，即将返回初审列表
+end
+
+
+@enduml

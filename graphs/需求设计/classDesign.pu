@@ -1,0 +1,37 @@
+@startuml classDesign
+class Slice {
+  respData
+  fetchData()
+  setOptions()
+}
+note right of Slice::respData
+  请求响应数据
+end note
+note left of Slice::fetchData
+  携带传入 options 获取图表数据
+end note
+note right of Slice::setOptions
+  根据 isSlice 与 缓存 判断是否替换参数
+  设置 options
+end note
+
+Slice -- Interface
+interface Interface {
+  options
+  isSlice
+  isDashboard
+  url
+}
+note left of Interface::options
+  图表渲染数据
+end note
+note right of Interface::isSlice
+  参数缓存、样式控制
+end note
+note right of Interface::isDashboard
+  控制 Slice 自动获取新图表数据
+end note
+note left of Interface::url
+  数据请求接口地址
+end note
+@enduml

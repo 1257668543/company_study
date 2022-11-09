@@ -1,0 +1,49 @@
+@startuml pageInter
+title 看板分享
+actor       数据平台用户     as User
+actor       业务系统用户     as Buser
+participant 看板管理页面     as Dfe
+participant 分享看板页面     as Sfe
+participant 业务系统页面     as Bfe
+participant 数据平台后端接口        as Be
+participant 数据平台数据库          as Db
+
+== 创建分享 ==
+User -> Dfe: 选中自己管理的看板点击分享
+User -> Dfe: 输入授权的业务系统地址
+Dfe -> Dfe: 校验地址格式
+Dfe -> Be: 请求保存
+Be -> Db: 查询当前看板是否存在对该地址的授权
+alt 不存在
+  Be -> Db: 插入一条记录
+  Be -> Dfe: status: 0, msg: '分享创建成功'
+  Dfe -> User: 展示授权地址与分享链接，提供一键复制iframe标签
+else 存在
+  Be -> Dfe: status: -1024, msg: '授权已存在，请勿重复创建'
+end
+
+== 看板权限校验 ==
+Buser -> Bfe: 业务系统中查看数据平台看板
+Bfe -> Dfe: 请求页面资源
+Dfe -> Dfe: 判断是否存在父文档
+alt 存在
+  Dfe -> Dfe: 判断父文档上是否还有父文档
+  alt 存在
+    Dfe -> Dfe: 添加请求头safe-url, 值为window.parent.document.referrer
+  else 不存在
+    Dfe -> Dfe: 添加请求头safe-url, 值为document.referrer
+  end
+else 不存在
+  Dfe -> Dfe: 数据平台查看普通看板，正常请求
+end
+Dfe -> Be: 请求看板数据
+Be -> Be: 判断是否存在请求头safe-url
+alt 存在
+  Be -> Db: 查询当前看板分享记录中是否存在生效的safe-url
+else 不存在
+  Be -> Db: 数据平台权限控制
+end
+Be -> Dfe: 返回看板数据
+Dfe -> Bfe: 展示在业务系统页面中
+Bfe -> Buser: 展示看板
+@enduml

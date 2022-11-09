@@ -1,0 +1,22 @@
+@startuml pageInter
+title 配置业务
+actor       用户           as User
+participant 业务配置页面        as Fe
+participant 后端        as Be
+participant 数据库      as Db
+User -> Fe: 用户点击 新建/编辑 业务
+Fe -> User: 弹出业务配置抽屉
+== 配置筛选 ==
+User -> Fe: 选取业务需要的筛选
+== 配置展示 ==
+User -> Fe: 选择业务展示类型（本期只做辐射，点对点关系）
+User -> Fe: 选择是否启用数据统计
+== 上传数据 ==
+User -> Fe: 点击上传文件
+Fe -> User: 选择本地excel文件
+User -> Fe: 确定选择后存入前端缓存
+== 新建 ==
+User -> Fe: 点击新建 / 保存
+Fe -> Be: 前端/后端解析excel文件转为JSON，若后端解析则前端使用formdata上传流文件
+Be -> Db: Insert / Update表
+@enduml
